@@ -5,9 +5,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -16,7 +19,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dwsc.proyecto.verifymovie.exceptions.CustomResponse;
+import dwsc.proyecto.verifymovie.exceptions.MovieNotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
+@Tag(name = "movies", description = "validate movie")
 public class VerifyMovieController {
 	@Value("${apiKey}")
 	private String apiKey;
@@ -24,8 +38,12 @@ public class VerifyMovieController {
 	@Value("${url}")
 	private String url;
 
-	@GetMapping("/{title}")
-	public String checkMovie(@PathVariable String title, @RequestParam(defaultValue = "") String year) throws Exception, JsonProcessingException {
+	@Operation(summary = "Find movie by title and year", description = "Operation to validate the existence of a movie given its title and optionally its year")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "movie is  valid"),
+			@ApiResponse(responseCode = "404", description = "movie not found", content = @Content(schema = @Schema(implementation = CustomResponse.class))) })
+	@RequestMapping(method = RequestMethod.GET, path = "/{title}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<String> checkMovie(@Parameter(description = "Movie title") @PathVariable String title, @Parameter(description = "Movie year") @RequestParam(defaultValue = "") String year)
+			throws Exception, JsonProcessingException {
 		// Construct the request
 		String encodedTitle;
 		String encodedYear;
@@ -37,21 +55,21 @@ public class VerifyMovieController {
 		}
 
 		String completeUrl = url + "?apikey=" + apiKey + "&t=" + encodedTitle + "&y=" + encodedYear;
-		
+
 		// Send request and obtain response using Rest Template
 		// https://www.baeldung.com/rest-template
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> response = restTemplate.getForEntity(completeUrl, String.class);
-		
-		//Parse response
+
+		// Parse response
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode root = mapper.readTree(response.getBody());
-		Boolean movieExists= Boolean.parseBoolean(root.path("Response").textValue());
+		Boolean movieExists = Boolean.parseBoolean(root.path("Response").textValue());
 		if (!movieExists) {
-			//create exception
-		} 
-		String posterUrl = (root.path("Poster").textValue());	
-		return posterUrl; 
-				
+			throw new MovieNotFoundException(HttpStatus.NOT_FOUND, "This movie does not exist");
+		}
+		String posterUrl = (root.path("Poster").textValue());
+		return ResponseEntity.ok(posterUrl);
+
 	}
 }
