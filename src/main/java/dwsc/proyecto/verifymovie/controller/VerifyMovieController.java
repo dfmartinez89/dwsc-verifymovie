@@ -36,7 +36,7 @@ public class VerifyMovieController {
 			throw new RuntimeException(ex.getCause());
 		}
 
-		String completeUrl = url + "?apikey=" + apiKey + "&s=" + encodedTitle + "&y=" + encodedYear;
+		String completeUrl = url + "?apikey=" + apiKey + "&t=" + encodedTitle + "&y=" + encodedYear;
 		
 		// Send request and obtain response using Rest Template
 		// https://www.baeldung.com/rest-template
@@ -50,6 +50,8 @@ public class VerifyMovieController {
 		if (!movieExists) {
 			//create exception
 		} 
-			return (root.path("Poster").asText());//returns null cause its another level
+		String posterUrl = (root.path("Poster").textValue());	
+		return posterUrl; 
+				
 	}
 }
