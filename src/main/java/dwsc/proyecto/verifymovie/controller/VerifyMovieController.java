@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,16 +25,18 @@ public class VerifyMovieController {
 	private String url;
 
 	@GetMapping("/{title}")
-	public String checkMovie(@PathVariable String title) throws Exception, JsonProcessingException {
+	public String checkMovie(@PathVariable String title, @RequestParam(defaultValue = "") String year) throws Exception, JsonProcessingException {
 		// Construct the request
 		String encodedTitle;
+		String encodedYear;
 		try {
 			encodedTitle = URLEncoder.encode(title, StandardCharsets.UTF_8.toString());
+			encodedYear = URLEncoder.encode(year, StandardCharsets.UTF_8.toString());
 		} catch (UnsupportedEncodingException ex) {
 			throw new RuntimeException(ex.getCause());
 		}
 
-		String completeUrl = url + "?apikey=" + apiKey + "&s=" + encodedTitle;
+		String completeUrl = url + "?apikey=" + apiKey + "&s=" + encodedTitle + "&y=" + encodedYear;
 		
 		// Send request and obtain response using Rest Template
 		// https://www.baeldung.com/rest-template
@@ -45,8 +48,8 @@ public class VerifyMovieController {
 		JsonNode root = mapper.readTree(response.getBody());
 		Boolean movieExists= Boolean.parseBoolean(root.path("Response").textValue());
 		if (!movieExists) {
-			
+			//create exception
 		} 
-			return (root.path("Poster").textValue());
+			return (root.path("Poster").asText());//returns null cause its another level
 	}
 }
