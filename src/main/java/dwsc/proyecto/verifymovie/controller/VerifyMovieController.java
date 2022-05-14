@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 import dwsc.proyecto.verifymovie.exceptions.CustomResponse;
 import dwsc.proyecto.verifymovie.exceptions.MovieNotFoundException;
@@ -38,11 +39,14 @@ public class VerifyMovieController {
 	@Value("${url}")
 	private String url;
 
+	private static final Gson gson = new Gson();
+
 	@Operation(summary = "Find movie by title and year", description = "Operation to validate the existence of a movie given its title and optionally its year")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "movie is  valid"),
 			@ApiResponse(responseCode = "404", description = "movie not found", content = @Content(schema = @Schema(implementation = CustomResponse.class))) })
 	@RequestMapping(method = RequestMethod.GET, path = "/{title}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<String> checkMovie(@Parameter(description = "Movie title") @PathVariable String title, @Parameter(description = "Movie year") @RequestParam(defaultValue = "") String year)
+	public ResponseEntity<String> checkMovie(@Parameter(description = "Movie title") @PathVariable String title,
+			@Parameter(description = "Movie year") @RequestParam(defaultValue = "") String year)
 			throws Exception, JsonProcessingException {
 		// Construct the request
 		String encodedTitle;
@@ -69,7 +73,8 @@ public class VerifyMovieController {
 			throw new MovieNotFoundException(HttpStatus.NOT_FOUND, "This movie does not exist");
 		}
 		String posterUrl = (root.path("Poster").textValue());
-		return ResponseEntity.ok(posterUrl);
+
+		return ResponseEntity.ok(gson.toJson(posterUrl)); //string wrapped in json
 
 	}
 }
