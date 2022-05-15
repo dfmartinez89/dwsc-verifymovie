@@ -46,19 +46,17 @@ public class VerifyMovieController {
 			@ApiResponse(responseCode = "404", description = "movie not found", content = @Content(schema = @Schema(implementation = CustomResponse.class))) })
 	@RequestMapping(method = RequestMethod.GET, path = "/{title}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> checkMovie(@Parameter(description = "Movie title") @PathVariable String title,
-			@Parameter(description = "Movie year") @RequestParam(defaultValue = "") String year)
+			@Parameter(description = "Movie year") @RequestParam(required = false) Integer year)
 			throws Exception, JsonProcessingException {
 		// Construct the request
 		String encodedTitle;
-		String encodedYear;
 		try {
 			encodedTitle = URLEncoder.encode(title, StandardCharsets.UTF_8.toString());
-			encodedYear = URLEncoder.encode(year, StandardCharsets.UTF_8.toString());
 		} catch (UnsupportedEncodingException ex) {
 			throw new RuntimeException(ex.getCause());
 		}
 
-		String completeUrl = url + "?apikey=" + apiKey + "&t=" + encodedTitle + "&y=" + encodedYear;
+		String completeUrl = url + "?apikey=" + apiKey + "&t=" + encodedTitle + "&y=" + year+"";
 
 		// Send request and obtain response using Rest Template
 		// https://www.baeldung.com/rest-template
@@ -74,7 +72,7 @@ public class VerifyMovieController {
 		}
 		String posterUrl = (root.path("Poster").textValue());
 
-		return ResponseEntity.ok(gson.toJson(posterUrl)); //string wrapped in json
+		return ResponseEntity.ok(gson.toJson(posterUrl)); // string wrapped in json
 
 	}
 }
