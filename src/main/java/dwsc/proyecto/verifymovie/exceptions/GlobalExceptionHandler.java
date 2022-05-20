@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MovieNotFoundException.class)
-	public ResponseEntity<CustomResponse> studentNotFound(RuntimeException ex) {
+	public ResponseEntity<CustomResponse> movieNotFound(RuntimeException ex) {
 		CustomResponse resp = new CustomResponse();
 		resp.setTimestamp(LocalDateTime.now());
 		resp.setError(ex.getMessage());
