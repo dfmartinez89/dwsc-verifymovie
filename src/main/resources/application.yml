@@ -20,6 +20,11 @@ info:
   description: This application validates the existence of a movie using omdb and returns its poster url
 server:
  port: ${PORT:${SERVER_PORT:0}}
+ error:
+  include-message: always
+  include-binding-errors: always
+  include-stacktrace: always
+  include-exception: true
 
 spring:
  application:
