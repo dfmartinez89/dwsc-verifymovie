@@ -68,7 +68,7 @@ public class VerifyMovieController {
 		JsonNode root = mapper.readTree(response.getBody());
 		Boolean movieExists = Boolean.parseBoolean(root.path("Response").textValue());
 		if (!movieExists) {
-			throw new MovieNotFoundException(HttpStatus.NOT_FOUND, "This movie does not exist");
+			throw new MovieNotFoundException(HttpStatus.NOT_FOUND, "The movie with title: " + title + " does not exist");
 		}
 		String posterUrl = (root.path("Poster").textValue());
 
