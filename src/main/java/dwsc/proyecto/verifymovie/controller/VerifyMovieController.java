@@ -45,7 +45,8 @@ public class VerifyMovieController {
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "movie is  valid"),
 			@ApiResponse(responseCode = "404", description = "movie not found", content = @Content(schema = @Schema(implementation = CustomResponse.class))) })
 	@RequestMapping(method = RequestMethod.GET, path = "/{title}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<String> checkMovie(@Parameter(description = "Movie title") @PathVariable String title,
+	public ResponseEntity<String> checkMovie(
+			@Parameter(description = "Movie title") @PathVariable(required = true) String title,
 			@Parameter(description = "Movie year") @RequestParam(required = false) Integer year)
 			throws Exception, JsonProcessingException {
 		// Construct the request
@@ -56,7 +57,7 @@ public class VerifyMovieController {
 			throw new RuntimeException(ex.getCause());
 		}
 
-		String completeUrl = url + "?apikey=" + apiKey + "&t=" + encodedTitle + "&y=" + year+"";
+		String completeUrl = url + "?apikey=" + apiKey + "&t=" + encodedTitle + "&y=" + year + "";
 
 		// Send request and obtain response using Rest Template
 		// https://www.baeldung.com/rest-template
@@ -68,7 +69,8 @@ public class VerifyMovieController {
 		JsonNode root = mapper.readTree(response.getBody());
 		Boolean movieExists = Boolean.parseBoolean(root.path("Response").textValue());
 		if (!movieExists) {
-			throw new MovieNotFoundException(HttpStatus.NOT_FOUND, "The movie with title: " + title + " does not exist");
+			throw new MovieNotFoundException(HttpStatus.NOT_FOUND,
+					"The movie with title: " + title + " does not exist");
 		}
 		String posterUrl = (root.path("Poster").textValue());
 
